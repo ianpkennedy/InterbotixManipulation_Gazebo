@@ -1,0 +1,6 @@
+float64 x #positions
+float64 y
+float64 z
+int64 s #gripper state (1 is closed)
+---
+int32 code #return status

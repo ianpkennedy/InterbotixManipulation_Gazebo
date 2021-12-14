@@ -1,0 +1,31 @@
+<launch>
+<!-- Source (accessed 10/23): http://gazebosim.org/tutorials?tut=ros_roslaunch&cat=connect_ros
+    Source (accessed 10/23): gazebo_ros empty_world.launch
+-->
+
+<rosparam file="$(find diff_drive)/config/param.yaml"/>
+
+<param name="robot_description" command="$(find xacro)/xacro $(find diff_drive)/urdf/ddrive.urdf.xacro" />
+
+
+
+
+<include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(find diff_drive)/worlds/ddrive.world"/>
+      <arg name="paused" value="true"/>
+</include>
+
+
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+     args="-urdf -param robot_description -model ddrivebot -z 0.25" />
+
+
+<node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher"/> 
+
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/view2.rviz"/>
+
+<node name="flip" pkg="diff_drive" type="flip" />
+
+</launch>

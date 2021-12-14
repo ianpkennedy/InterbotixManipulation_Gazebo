@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+
+<robot name="ddrivebot" xmlns:xacro="https://ros.org/wiki/xacro">
+<xacro:include filename="$(find diff_drive)/urdf/ddrive.gazebo"/>
+
+<xacro:property name="yaml" value="$(find diff_drive)/config/param.yaml" />
+<xacro:property name="param" value="${load_yaml(yaml)}" />
+
+<xacro:property name="m1" value="${param['m1']}" />
+<xacro:property name="m2" value="${param['m2']}" />
+<xacro:property name="m3" value="${param['m3']}" />
+<xacro:property name="l1" value="${param['l1']}" />
+<xacro:property name="l3" value="${param['l3']}" />
+<xacro:property name="w1" value="${param['w1']}" />
+<xacro:property name="d1" value="${param['d1']}" />
+<xacro:property name="w2" value="${param['w2']}" />
+<xacro:property name="r2" value="${param['r2']}" />
+<xacro:property name="r3" value="${param['r3']}" />
+
+<link name="base_link"/>
+<!-- ask about the link here as dummy link -->
+
+
+<link name="body">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${l1} ${w1} ${d1}" />
+      </geometry>
+       <material name="red">
+           <color rgba="1 0 0 1" />
+       </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${l1} ${w1} ${d1}" />
+      </geometry>
+      <material name="red">
+           <color rgba="1 0 0 1" />
+       </material>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${m1}"/>
+      <inertia
+        izz="${(1/12)*m1*(l1**2+w1**2)}" 
+        ixy="0.0" 
+        ixz="0.0"
+        iyy="${(1.0/12.0)*m1*(d1**2 + l1**2)}"  
+        iyz="0.0"
+        ixx="${(1/12)*m1*(w1**2+d1**2)}"/>
+      </inertial>
+</link>
+
+<link name="left_wheel">
+  <visual>
+    <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r2}" length="${w2}"/>
+      </geometry>
+        <material name="blue">
+           <color rgba="0 0 1 1" />
+       </material>
+  </visual>
+  <collision>
+      <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r2}" length="${w2}"/>
+      </geometry>
+        <material name="blue">
+           <color rgba="0 0 1 1" />
+       </material>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <mass value="${m2}"/>
+       <inertia
+        izz="${(0.5*m2*r2**2)}" 
+        ixy="0.0" 
+        ixz="0.0"
+        iyy="${(0.25*m2*r2**2+(1/12)*m2*w2**2)}"  
+        iyz="0.0"
+        ixx="${(0.25*m2*r2**2+(1/12)*m2*w2**2)}"/>
+      </inertial>
+</link>
+
+
+<link name="right_wheel">
+  <visual>
+    <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r2}" length="${w2}"/>
+      </geometry>
+        <material name="blue">
+           <color rgba="0 0 1 1" />
+       </material>
+  </visual>
+  <collision>
+      <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r2}" length="${w2}"/>
+      </geometry>
+        <material name="blue">
+           <color rgba="0 0 1 1" />
+       </material>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <mass value="${m2}"/>
+       <inertia
+        izz="${(0.5*m2*r2**2)}" 
+        ixy="0.0" 
+        ixz="0.0"
+        iyy="${(0.25*m2*r2**2+(1/12)*m2*w2**2)}"  
+        iyz="0.0"
+        ixx="${(0.25*m2*r2**2+(1/12)*m2*w2**2)}"/>
+      </inertial>
+</link>
+
+<link name="cast_bottom_link">
+  <visual>
+    <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r3}" length="${r2-d1/2}"/>
+      </geometry>
+        <material name="green">
+           <color rgba="0 1 0 1" />
+       </material>
+  </visual>
+  <collision>
+      <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r3}" length="${r2-d1/2}"/>
+      </geometry>
+        <material name="green">
+           <color rgba="0 1 0 1" />
+       </material>
+    </collision>
+    <inertial>
+      <mass value="${m3}"/>
+       <origin xyz="0 0 0" rpy = "0 0 0"   />
+       <inertia
+        izz="${(0.5*m3*r3**2)}" 
+        ixy="0.0" 
+        ixz="0.0"
+        iyy="${(0.25*m3*r3**2+(1/12)*m3*(r2-d1/2)**2)}"  
+        iyz="0.0"
+        ixx="${(0.25*m3*r3**2+(1/12)*m3*(r2-d1/2)**2)}"/>
+      </inertial>
+</link>
+
+<link name="cast_top_link">
+  <visual>
+    <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r3}" length="${r2-d1/2}"/>
+      </geometry>
+        <material name="green">
+           <color rgba="0 1 0 1" />
+       </material>
+  </visual>
+  <collision>
+      <origin xyz="0 0 0" rpy = "0 0 0"   />
+      <geometry>
+        <cylinder radius="${r3}" length="${r2-d1/2}"/>
+      </geometry>
+        <material name="green">
+           <color rgba="0 1 0 1" />
+       </material>
+    </collision>
+    <inertial>
+      <mass value="${m3}"/>
+       <origin xyz="0 0 0" rpy = "0 0 0"   />
+       <inertia
+        izz="${(0.5*m3*r3**2)}" 
+        ixy="0.0" 
+        ixz="0.0"
+        iyy="${(0.25*m3*r3**2+(1/12)*m3*(r2-d1/2)**2)}"  
+        iyz="0.0"
+        ixx="${(0.25*m3*r3**2+(1/12)*m3*(r2-d1/2)**2)}"/>
+      </inertial>
+</link>
+
+<joint name="joint0" type="fixed">
+  <parent link="base_link"/>
+  <child link="body" /> 
+  <origin xyz="0.0 0.0 ${r2}" rpy="0.0 0.0 0.0"/>
+  <axis xyz="0 0 1"/>
+</joint> 
+
+
+<joint name="left_joint" type="continuous">
+  <parent link="body"/>
+  <child link="left_wheel" /> 
+  <origin xyz="${l1/2-0.05} ${+w1/2+w2/2} 0" rpy="${+pi/2} 0 0"/>
+  <axis xyz="0 0 1"/>
+</joint> 
+
+<joint name="right_joint" type="continuous">
+  <parent link="body"/>
+  <child link="right_wheel" /> 
+  <origin xyz="${l1/2-0.05} ${-w1/2-w2/2} 0" rpy="${-pi/2} 0 0"/>
+  <axis xyz="0 0 1"/>
+</joint> 
+
+<joint name="bottom_stand" type="fixed">
+  <parent link="body"/>
+  <child link="cast_bottom_link"/> 
+  <origin xyz="${-l1/2+0.05} 0 ${-r2+d1/2}" rpy="0 0 0"/>
+  <axis xyz="0 0 1"/>
+</joint> 
+
+
+<joint name="top_stand" type="fixed">
+  <parent link="body"/>
+  <child link="cast_top_link"/> 
+  <origin xyz="${-l1/2+0.05} 0 ${+r2-d1/2}" rpy="0 0 0"/>
+  <axis xyz="0 0 1"/>
+</joint> 
+
+
+
+
+
+<!-- Source (10/24): http://wiki.ros.org/urdf/XML/joint , http://wiki.ros.org/urdf/XML/link
+    Source (10/25): https://wiki.cadcam.com.my/knowledgebase/mass-and-area-moments-of-inertia-in-solidworks/ , https://dynref.engr.illinois.edu/rem.html, http://hyperphysics.phy-astr.gsu.edu/hbase/icyl.html
+-->
+</robot>

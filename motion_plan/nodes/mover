@@ -1,0 +1,209 @@
+#!/usr/bin/env python
+
+from os import wait
+import rospy
+import moveit_msgs.msg
+import moveit_commander
+import geometry_msgs.msg
+from std_srvs.srv import Empty, EmptyResponse
+from motion_plan.srv import Step, StepResponse, Follow, FollowResponse, Reset, ResetResponse
+from time import sleep
+from tf_conversions import transformations
+from math import pi
+import copy
+"""
+The mover node sets up the planning algorithm for the px100.
+
+Services:
+    px100/reset of type Empty brings the arm to the home position and creates a RealSense box in the planning scene
+
+    px100/step of type Step that actuates the arm and gripper
+
+    px100/follow of type Follow that follows the waypoints and opens/closes the gripper at given waypoints
+"""
+
+
+
+class Mover:
+    def __init__(self):
+      
+        #create planning scene
+        self.scene = moveit_commander.PlanningSceneInterface()
+        
+        sleep(2) # Source (10/30): https://answers.ros.org/question/209030/moveit-planningsceneinterface-addbox-not-showing-in-rviz/
+
+        # Add table collision zone
+        self.table_pose = geometry_msgs.msg.PoseStamped() 
+        self.table_pose.header.frame_id = "world"
+        self.table_pose.pose.orientation.w=1.0
+        self.table_pose.pose.position.z = -0.1
+        self.table_name = "table"
+        self.scene.add_box(self.table_name,self.table_pose,size=(5,5,0.1))
+
+        #Add robot commander for motions
+        self.robot = moveit_commander.RobotCommander()
+
+        self.move_group_arm_name = "interbotix_arm"
+        self.move_group_arm = moveit_commander.MoveGroupCommander(self.move_group_arm_name)
+
+        self.move_group_grip_name = "interbotix_gripper"
+        self.move_group_grip = moveit_commander.MoveGroupCommander(self.move_group_grip_name)
+
+
+        sleep(3)
+
+
+        #Set up all services
+        self.home_position = rospy.Service('reset',Reset,self.reset_handle)
+        self.step_position = rospy.Service('step', Step, self.step_handle)
+        self.follow = rospy.Service('follow',Follow,self.follow_handle)
+
+
+    def follow_handle(self,req):
+        """ 
+        Args:
+            req.repeat: int value that determines whether to run the code in a loop 
+        Returns:
+            FollowResponse (empty return)       
+        """
+
+        #Sources (10/31): http://docs.ros.org/en/indigo/api/pr2_moveit_tutorials/html/planning/scripts/doc/move_group_python_interface_tutorial.html
+        traj_array = rospy.get_param('/px100/traj_pts')
+        i=0
+
+
+        #Follow the waypoints
+        while i<len(traj_array):
+    
+            #Move arm
+            self.move_group_arm.clear_path_constraints()
+            self.move_group_arm.set_position_target([traj_array[i][0],traj_array[i][1],traj_array[i][2]])
+            plan = self.move_group_arm.go(wait=True)
+
+            sleep(1)
+            #Handle gripper
+            if traj_array[i][3] == 1:
+                self.move_group_grip.set_named_target("Closed")
+            
+           
+
+            if traj_array[i][3] == 0:
+                self.move_group_grip.set_named_target("Open")
+
+
+            #Close gripper if possible
+            try:
+                plan1 = self.move_group_grip.go(wait=True)
+            except:
+                pass
+
+            sleep(1)
+
+            i+=1
+
+            if req.repeat==1 and i==len(traj_array):
+                i=0
+                
+        return FollowResponse()
+
+    def step_handle(self,req):
+        """
+        Args:
+            x,y,z,s: Cartesian positions and an integer code to specify whether the gripper is open or close
+        Returns:
+            code: integer motion plan error code
+        """
+
+        #Source (10/30): https://github.com/udacity/simple_arm/issues/
+        traj_array = rospy.get_param('/px100/traj_pts')
+
+        self.move_group_arm.clear_path_constraints()
+        
+        #Set position and go to target
+        self.move_group_arm.set_position_target([req.x,req.y,req.z])     
+        plan = self.move_group_arm.go(wait=True)
+        self.move_group_arm.stop()
+        self.move_group_arm.clear_pose_targets()
+
+
+        #Handle gripper state
+        if req.s == 1:
+            self.move_group_grip.set_named_target("Closed")
+
+        if req.s == 0:
+            self.move_group_grip.set_named_target("Open")
+        
+        plan1 = self.move_group_grip.go(wait=True)
+        
+
+        #If successul plan, add to waypoints list
+        if plan == 1:
+            traj_array.append([req.x,req.y,req.z,req.s])
+
+        rospy.set_param('/px100/traj_pts', traj_array) 
+
+
+        return StepResponse(plan)
+
+    def reset_handle(self,req):
+        """
+        Args:
+            req.x: x position of realsense box
+            req.y: y position of realsense box
+            req.ang: z angle in radians
+            req.i: integer code to determine whether to clear waypoints (if 1)
+        Return:
+            EmptyResponse: string m that states what was done to list of waypoints
+        """
+
+    
+        i=req.i #index to start the check
+        sleep(2) # Source (10/30): https://answers.ros.org/question/209030/moveit-planningsceneinterface-addbox-not-showing-in-rviz/
+
+
+        #Add box to planning scene
+        self.rsense_pose = geometry_msgs.msg.PoseStamped() 
+        self.rsense_pose.header.frame_id = "world"
+        
+        self.rsense_pose.pose.orientation.w=1.0
+        self.rsense_pose.pose.orientation.x=0
+        self.rsense_pose.pose.orientation.y=0
+        self.rsense_pose.pose.orientation.z=req.ang/(pi/2)
+
+        self.rsense_pose.pose.position.z = 0.025
+        self.rsense_pose.pose.position.x = req.x    # should be: 0.14
+        self.rsense_pose.pose.position.y = req.y    # should be -.045
+        self.rsense_name = "realsense"
+
+        self.scene.add_box(self.rsense_name,self.rsense_pose,size=(0.14,0.09,0.05))
+
+        message = "Did not clear waypoints"
+
+    
+        if i == 1:
+            traj_array = rospy.get_param('/px100/traj_pts')
+            traj_array = []
+            rospy.set_param('/px100/traj_pts', traj_array) 
+            message="Reset the trajectory points"
+
+
+        # Source (10/30): https://www.youtube.com/watch?v=MiCL6u0wctk
+        self.move_group_arm.set_named_target("Home")
+        plan = self.move_group_arm.go(wait=True)
+        self.move_group_arm.stop()
+        self.move_group_arm.clear_pose_targets()
+        
+        return ResetResponse(message)
+
+       
+
+def main():
+    """
+    Main function
+    """
+    rospy.init_node('mover')
+    mover = Mover()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

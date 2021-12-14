@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+<robot name="ddrivebot_g" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:property name="yaml" value="$(find diff_drive)/config/param.yaml" />
+<xacro:property name="param" value="${load_yaml(yaml)}" />
+
+<xacro:property name="w1" value="${param['w1']}" />
+<xacro:property name="w2" value="${param['w2']}" />
+<xacro:property name="r2" value="${param['r2']}" />
+
+
+
+
+  <gazebo reference="body">
+     <material>Gazebo/Red</material>
+     <mu1>0</mu1>
+     <mu2>0</mu2> 
+  </gazebo>
+  
+  <gazebo reference="left_wheel">
+     <material>Gazebo/Orange</material>
+     <mu1>999</mu1>
+     <mu2>999</mu2>
+  </gazebo>
+  
+  <gazebo reference="right_wheel">
+     <material>Gazebo/Blue</material>
+     <mu1>999</mu1>
+     <mu2>999</mu2>
+  </gazebo>
+
+  <gazebo reference="cast_top_link">
+     <material>Gazebo/Green</material>
+     <mu1>0</mu1>
+     <mu2>0</mu2> 
+  </gazebo>
+  
+  <gazebo reference="cast_bottom_link">
+     <material>Gazebo/Green</material>
+     <mu1>0</mu1>
+     <mu2>0</mu2>
+  </gazebo>
+
+<gazebo>
+      <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+       <rosDebugLevel>na</rosDebugLevel>
+       <alwaysOn>true</alwaysOn>
+       <updateRate>100</updateRate>
+       <leftJoint>left_joint</leftJoint>
+       <rightJoint>right_joint</rightJoint>
+       <wheelSeparation>${w1+w2}</wheelSeparation>
+       <wheelDiameter>${r2}</wheelDiameter>
+       <wheelTorque>20</wheelTorque>
+       <commandTopic>/cmd_vel</commandTopic>
+       <odometryTopic>/odom</odometryTopic>
+       <odometryFrame>odom</odometryFrame>
+       <robotBaseFrame>base_link</robotBaseFrame>
+       <publishWheelTF>false</publishWheelTF>
+       <publishOdomTF>true</publishOdomTF>
+       <publishWheelJointState>true</publishWheelJointState>
+       <wheelAcceleration>true</wheelAcceleration>
+       <odometrySource>world</odometrySource>
+       <publishTf>1</publishTf>
+   </plugin>
+</gazebo>
+
+</robot>
+
+
+
+<!-- Source (10/25): http://gazebosim.org/tutorials/?tut=ros_urdf
+      Source (10/26): http://gazebosim.org/tutorials?tut=ros_gzplugins#DifferentialDrive , https://kiranpalla.com/blog/ros-using-differential-drive-gazebo-plugin/
+      Source (10/26): git clone https://kiranpalla@bitbucket.org/kiranpalla/learn-ros.git
+-->

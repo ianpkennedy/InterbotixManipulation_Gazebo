@@ -1,0 +1,28 @@
+<launch>
+<rosparam file="$(find diff_drive)/config/param.yaml"/>
+
+<param name="robot_description" command="$(find xacro)/xacro $(find diff_drive)/urdf/ddrive.urdf.xacro" />
+<arg name="gui" default="false" />
+
+
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+<group if="$(arg gui)">
+  <node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher_gui" >
+   <param name="use_gui" value="true" /> 
+   <param name="rate" value="50"/>
+  </node> 
+</group>
+
+<group unless="$(arg gui)">
+   <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher"/> 
+</group>
+
+
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find diff_drive)/view.rviz"/>
+
+<node name="flip" pkg="diff_drive" type="flip" />
+
+
+</launch>

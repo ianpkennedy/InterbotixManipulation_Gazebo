@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+
+import rospy
+from geometry_msgs.msg import Twist, Vector3
+
+
+"""
+The flip node publishes to the cmd_vel topic in order to flip the wheeled robot. 
+Publishers:
+    cmd_vel is of type geometry_msgs/Twist
+    
+"""
+
+t=0.0
+polarity = 1
+
+class Flip():
+
+    def __init__(self):
+        self.diff_cmd_pub = rospy.Publisher('/cmd_vel',Twist, queue_size=10)
+
+        self.tmr = rospy.Timer(rospy.Duration(0.1),self.tmr_cback)
+
+    def tmr_cback(self,event):
+
+        """
+        Callback for cmd_vel publishing. Publishes a cmd_vel message for the wheeled robot.
+        """
+        global t
+        global polarity
+        t+=0.1
+
+
+        #Flip direction at 1 second intervals
+        if t>1.0:
+            t=0.0
+            polarity*=-1
+
+        self.diff_cmd_pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,polarity*1.0)))
+
+
+        print('time ' , t)
+
+
+def main():
+    """
+    Main function
+    """
+    rospy.init_node('flip')
+    flip = Flip()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

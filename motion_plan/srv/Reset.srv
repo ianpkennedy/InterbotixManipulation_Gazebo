@@ -1,0 +1,6 @@
+float64 x #x position in meters
+float64 y #y position in meters
+float64 ang #z orientation angle in radians
+int32 i #Angle of 1 will reset parameters
+---
+string m
