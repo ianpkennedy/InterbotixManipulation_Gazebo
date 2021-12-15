@@ -30,11 +30,14 @@ A video of the robot running in gazebo can be seen here:
 
 https://drive.google.com/file/d/17PfJBCpiLhK1-lG74WCfkLxjOEsUvfwg/view?usp=sharing
 
+![alt-text](https://github.com/ianpkennedy/EmbeddedProgramming/blob/main/BasicCircuitPIC32/example.gif)
+
+
 A video of the robot performing in real life:
 
 https://drive.google.com/file/d/1HljNYAiFwejft1ccZNIAGVfBpaTXv_GH/view?usp=sharing
 
-
+![alt-text](https://github.com/ianpkennedy/EmbeddedProgramming/blob/main/BasicCircuitPIC32/example.gif)
 
 
 Sources:
