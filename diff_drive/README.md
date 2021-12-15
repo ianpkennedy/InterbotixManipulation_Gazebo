@@ -21,6 +21,9 @@ A video of the robot performing the task in gazebo can be seen here:
 https://drive.google.com/file/d/1yHBLn0aciDDX4AcN6VDNNo0hOAP1hzuf/view?usp=sharing
 
 
+https://github.com/ianpkennedy/ROS_InterbotixManipulation_Gazebo/blob/main/diff_drive/example.gif
+
+![alt-text](https://github.com/ianpkennedy/ROS_InterbotixManipulation_Gazebo/blob/main/diff_drive/example.gif)
 
 Sources:
 For testing out vehicle dynamics in gazebo, http://wiki.ros.org/teleop_twist_keyboard (accessed 10/28)
